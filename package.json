@@ -1,0 +1,19 @@
+{
+  "name": "meets-helper-backend",
+  "version": "1.0.0",
+  "description": "The meets planning system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "vasyagymenyuk@yandex.ru",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.7.18",
+    "prettier": "^2.7.1"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.2"
+  }
+}
