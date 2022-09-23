@@ -4,7 +4,8 @@ const httpMethods = require("../common/http-methods");
 module.exports = function () {
   const routesMap = getRoutesMap(allRoutes);
 
-  return async function (req) {
+
+  return async function (req, res) {
     let url = normalizeIncomingUrl(req.url);
 
     const handler = routesMap.get(`${req.method.toLowerCase()}-${url}`);
@@ -27,6 +28,8 @@ module.exports = function () {
  * @returns {string}
  */
 function normalizeIncomingUrl(url) {
+  if(url === "/") return url
+
   if (!url.endsWith("/")) return url;
 
   if (url.endsWith("/")) return url.slice(0, url.lastIndexOf("/")); // TODO: должно обрезаться любое количество слешей в конце, а не только последний
@@ -70,11 +73,11 @@ function getRoutesMap(allRoutes) {
             routesMap.set(`${method.toLowerCase()}-${composedUrl}`, controller);
           } else {
             throw new Error(
-              "Invalid method, not existing url string or controller handler. Check your route description"
+              `[${routeGroupKey}]Invalid method, not existing url string or controller handler. Check your route description`
             );
           }
         }
-      } else throw new Error("Every route group must have groupUrl property");
+      } else throw new Error(`[${routeGroupKey}]There is no groupUrl in router`);
     }
   }
 
@@ -92,6 +95,8 @@ function parseAndJoinUrl(parentUrl, url) {
   if (parentUrl.startsWith("/")) {
     fullUrl += `${parentUrl}`;
   } else fullUrl += `/${parentUrl}`;
+
+  if(url === '/') return fullUrl
 
   if (fullUrl.endsWith("/")) {
     if (url.startsWith("/")) {
