@@ -12,7 +12,9 @@ const router = generateRouter();
 async function requestHandler(req, res) {
   extendRequestAndResponse(req, res);
 
-  const handler = await router(req);
+  const handler = await router(req, res);
+
+  if(handler.error) return res.error(handler.error)
 
   return await handler(req, res);
 }
