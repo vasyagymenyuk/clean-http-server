@@ -7,8 +7,18 @@ module.exports = [
       {
         method: "GET",
         url: "/",
+        middleware: [
+          (req, res, next) => {
+            req.user = {
+              id: 1,
+            };
+            console.log("in middleware");
+
+            next();
+          },
+        ],
         controller: controller.index,
-      }
+      },
     ],
   },
   {

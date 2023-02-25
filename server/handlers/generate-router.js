@@ -4,7 +4,6 @@ const httpMethods = require("../common/http-methods");
 module.exports = function () {
   const routesMap = getRoutesMap(allRoutes);
 
-
   return async function (req, res) {
     let url = normalizeIncomingUrl(req.url);
 
@@ -28,7 +27,7 @@ module.exports = function () {
  * @returns {string}
  */
 function normalizeIncomingUrl(url) {
-  if(url === "/") return url
+  if (url === "/") return url;
 
   if (!url.endsWith("/")) return url;
 
@@ -50,13 +49,15 @@ function getRoutesMap(allRoutes) {
 
     const groupsOrRoutes = [];
 
-    if (Array.isArray(router)) {
+    const conditions = {
+      isArray: Array.isArray(router),
+      isObject:
+        typeof router === "object" && !Array.isArray(router) && router !== null,
+    };
+
+    if (conditions.isArray) {
       groupsOrRoutes.push(...router);
-    } else if (
-      typeof router === "object" &&
-      !Array.isArray(router) &&
-      router !== null
-    ) {
+    } else if (conditions.isObject) {
       groupsOrRoutes.push(router);
     }
 
@@ -65,19 +66,34 @@ function getRoutesMap(allRoutes) {
         const parentUrl = groupOrRoute.groupUrl;
 
         for (const subRoute of groupOrRoute.subRoutes) {
-          const { method, url, controller } = subRoute;
+          const { method, url, controller, middleware } = subRoute;
 
           if (method && httpMethods.includes(method) && url && controller) {
             const composedUrl = parseAndJoinUrl(parentUrl, url);
 
-            routesMap.set(`${method.toLowerCase()}-${composedUrl}`, controller);
+            const middlewares = [];
+
+            if (middleware) {
+              if (Array.isArray(middleware)) middlewares.push(...middleware);
+
+              if (typeof middleware === "function")
+                middlewares.push(middleware);
+            }
+
+            middlewares.push(controller);
+
+            routesMap.set(
+              `${method.toLowerCase()}-${composedUrl}`,
+              middlewares
+            );
           } else {
             throw new Error(
-              `[${routeGroupKey}]Invalid method, not existing url string or controller handler. Check your route description`
+              `[${routeGroupKey}] Invalid method, not existing url string or controller handler. Check your route description`
             );
           }
         }
-      } else throw new Error(`[${routeGroupKey}]There is no groupUrl in router`);
+      } else
+        throw new Error(`[${routeGroupKey}]There is no groupUrl in router`);
     }
   }
 
@@ -96,7 +112,7 @@ function parseAndJoinUrl(parentUrl, url) {
     fullUrl += `${parentUrl}`;
   } else fullUrl += `/${parentUrl}`;
 
-  if(url === '/') return fullUrl
+  if (url === "/") return fullUrl;
 
   if (fullUrl.endsWith("/")) {
     if (url.startsWith("/")) {
